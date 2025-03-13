@@ -6,7 +6,7 @@ const router = express.Router();
 
 router.get("/route", async (req, res) => {
     const { start, end } = req.query;
-    console.log("API Key:", process.env.ORS_API_KEY);
+    // console.log("API Key:", process.env.ORS_API_KEY);
     console.log("Received request:", start, end);
     
     if (!start || !end) {
@@ -20,8 +20,7 @@ router.get("/route", async (req, res) => {
                 params: { api_key: process.env.ORS_API_KEY, start, end },
             }
         );
-        console.log(response)
-
+        // console.log(response)
         res.json(response.data);
     } catch (error) {
         console.error("Error fetching route", error.response?.data || error.message);
