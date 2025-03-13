@@ -17,7 +17,7 @@ export const MechanicProvider = ({ children }) => {
   const fetchNearbyMechanics = async () => {
     try {
       const response = await axios.get(
-        `http://localhost:5000/api/mechanics/nearby?longitude=${bikerLocation[1]}&latitude=${bikerLocation[0]}`
+        `http://localhost:5000/api/mechanics/nearby?longitude=${bikerLocation[0]}&latitude=${bikerLocation[1]}`
       );
       setMechanics(response.data);
     } catch (error) {

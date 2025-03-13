@@ -53,20 +53,65 @@ router.get("/nearby", async (req, res) => {
 
 
 
+// Get mechanic's active jobs
+router.get("/:mechanicId/jobs", async (req, res) => {
+  try {
+    const jobs = await Job.find({ 
+      mechanicId: req.params.mechanicId,
+      status: { $in: ["Pending", "In Progress"] }
+    });
+    res.json(jobs);
+  } catch (error) {
+    res.status(500).json({ message: "Error fetching jobs", error });
+  }
+});
+
+// Get mechanic's completed jobs
+router.get("/:mechanicId/completed-jobs", async (req, res) => {
+  try {
+    const jobs = await Job.find({ 
+      mechanicId: req.params.mechanicId,
+      status: "Completed"
+    });
+    res.json(jobs);
+  } catch (error) {
+    res.status(500).json({ message: "Error fetching completed jobs", error });
+  }
+});
+
 // Mark job as completed
 router.post("/jobs/:jobId/complete", async (req, res) => {
-    try {
-      const job = await Job.findById(req.params.jobId);
-      if (!job) return res.status(404).json({ message: "Job not found" });
-  
-      job.status = "Completed";
-      await job.save();
-  
-      res.json({ message: "Job completed successfully" });
-    } catch (error) {
-      res.status(500).json({ message: "Error completing job", error });
-    }
-  });
+  try {
+    const job = await Job.findById(req.params.jobId);
+    if (!job) return res.status(404).json({ message: "Job not found" });
+
+    job.status = "Completed";
+    job.completedAt = new Date();
+    await job.save();
+
+    res.json({ message: "Job completed successfully", job });
+  } catch (error) {
+    res.status(500).json({ message: "Error completing job", error });
+  }
+});
+
+// Update job status
+router.put("/jobs/:jobId", async (req, res) => {
+  try {
+    const { status } = req.body;
+    const job = await Job.findByIdAndUpdate(
+      req.params.jobId,
+      { status },
+      { new: true }
+    );
+    
+    if (!job) return res.status(404).json({ message: "Job not found" });
+    
+    res.json(job);
+  } catch (error) {
+    res.status(500).json({ message: "Error updating job", error });
+  }
+});
   
 
 module.exports = router;

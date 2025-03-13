@@ -230,7 +230,7 @@ const MapPage = () => {
 
         {/* Nearby Mechanics */}
         {mechanics.map((mechanic) => (
-          <Marker key={mechanic._id} position={[mechanic.location.coordinates[1], mechanic.location.coordinates[0]]} icon={customIcon}>
+          <Marker key={mechanic._id} position={[mechanic.location.coordinates[0], mechanic.location.coordinates[1]]} icon={customIcon}>
             <Popup>{mechanic.name} (Available: {mechanic.isAvailable ? "Yes" : "No"})</Popup>
           </Marker>
         ))}

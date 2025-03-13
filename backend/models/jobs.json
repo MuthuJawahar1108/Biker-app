@@ -1,0 +1,27 @@
+[
+    {
+      "bikerId": { "$oid": "65f1a3b2c9a1b2c3d4e5f678" },
+      "bikerName": "John Doe",
+      "mechanicId": { "$oid": "65f1a3b2c9f1a2b3c4d5e678" },
+      "location": {
+        "type": "Point",
+        "coordinates": [77.5946, 12.9716]
+      },
+      "issue": "Flat tire",
+      "status": "Pending",
+      "createdAt": { "$date": "2025-03-13T12:00:00Z" }
+    },
+    {
+      "bikerId": { "$oid": "65f1a3b2c1a2b3c4d5e6f789" },
+      "bikerName": "Jane Smith",
+      "mechanicId": { "$oid": "65f1a3b2c2a3b4c5d6e7f890" },
+      "location": {
+        "type": "Point",
+        "coordinates": [77.2090, 28.6139]
+      },
+      "issue": "Engine trouble",
+      "status": "In Progress",
+      "createdAt": { "$date": "2025-03-13T12:05:00Z" }
+    }
+  ]
+  

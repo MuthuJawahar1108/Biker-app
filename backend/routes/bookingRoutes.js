@@ -4,15 +4,52 @@ const Booking = require("../models/Booking");
 
 
 
+// Create new booking
+router.post("/", async (req, res) => {
+  try {
+    const { bikerId, bikerName, bikerLocation, issue } = req.body;
+    
+    const booking = new Booking({
+      bikerId,
+      bikerName,
+      bikerLocation: {
+        type: "Point",
+        coordinates: bikerLocation
+      },
+      issue,
+      status: "Pending"
+    });
+
+    await booking.save();
+    res.status(201).json(booking);
+  } catch (error) {
+    res.status(500).json({ message: "Error creating booking", error });
+  }
+});
+
 // Get all pending bookings (for mechanics)
 router.get("/pending", async (req, res) => {
-    try {
-      const pendingBookings = await Booking.find({ status: "Pending" });
-      res.json(pendingBookings);
-    } catch (error) {
-      res.status(500).json({ error: "Error fetching bookings" });
-    }
-  });
+  try {
+    const pendingBookings = await Booking.find({ status: "Pending" })
+      .populate("bikerId", "name phone")
+      .populate("mechanicId", "name phone");
+    res.json(pendingBookings);
+  } catch (error) {
+    res.status(500).json({ error: "Error fetching pending bookings" });
+  }
+});
+
+// Get bookings for a specific biker
+router.get("/biker/:bikerId", async (req, res) => {
+  try {
+    const bookings = await Booking.find({ bikerId: req.params.bikerId })
+      .sort({ createdAt: -1 })
+      .populate("mechanicId", "name phone");
+    res.json(bookings);
+  } catch (error) {
+    res.status(500).json({ message: "Error fetching biker bookings", error });
+  }
+});
   
 
 // Get all unassigned booking requests
@@ -80,7 +117,7 @@ router.post("/:bookingId/reject", async (req, res) => {
   });
 
 
-  router.get("/api/bookings/:bookingId/location", async (req, res) => {
+  router.get("/:bookingId/location", async (req, res) => {
     const { bookingId } = req.params;
     const booking = await Booking.findById(bookingId);
     if (!booking) return res.status(404).json({ error: "Booking not found" });
