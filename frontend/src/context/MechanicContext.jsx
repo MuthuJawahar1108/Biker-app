@@ -4,12 +4,14 @@ import axios from "axios";
 export const MechanicContext = createContext();
 
 export const MechanicProvider = ({ children }) => {
+
   const [mechanics, setMechanics] = useState([]);
   const [bikerLocation, setBikerLocation] = useState(null);
-
+  
   // Fetch nearby mechanics when biker's location is set
   useEffect(() => {
     if (bikerLocation) {
+      console.log("MechanicProvider rendered");
       fetchNearbyMechanics();
     }
   }, [bikerLocation]);

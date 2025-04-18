@@ -35,6 +35,8 @@ const MechanicDashboard = () => {
           longitude,
           latitude,
         });
+
+
         console.log(response.data)
         setMechanic(response.data.mechanic);
         setMechanicId(response.data.mechanic._id);
@@ -61,7 +63,7 @@ const MechanicDashboard = () => {
     const fetchBookings = async () => {
       try {
         const pendingResponse = await axios.get("http://localhost:5000/api/bookings/pending");
-        const acceptedResponse = await axios.get("http://localhost:5000/api/bookings/biker/65f1a3b2c987654321fedcba"); // Replace with actual biker ID
+        const acceptedResponse = await axios.get("http://localhost:5000/api/bookings/biker/67d516900960c9c1dde5f169"); // Replace with actual biker ID
 
         setPendingBookings(pendingResponse.data);
         setAcceptedBookings(acceptedResponse.data);
@@ -134,6 +136,8 @@ const MechanicDashboard = () => {
       .then(response => setCompletedJobs(response.data))
       .catch(error => console.error("Error fetching completed jobs:", error));
   }, [mechanicId]);
+
+
   useEffect(() => {
   if (!selectedBooking) return;
 
@@ -191,15 +195,20 @@ const MechanicDashboard = () => {
         </button>
       )}
       <h2>Accepted Bookings</h2>
-      {acceptedBookings.map((booking) => (
+      {acceptedBookings.map((booking) => { 
+        
+        console.log("Booking Data:", booking); // Debugging
+        return(
+        
         <div key={booking._id} style={{ border: "1px solid #ddd", padding: "10px", margin: "10px 0" }}>
-          <p><strong>Biker Location:</strong> {booking.bikerLocation.join(", ")}</p>
+          <p><strong>Biker Location:</strong> {booking.bikerLocation.coordinates}</p>
           <p><strong>Issue:</strong> {booking.issue}</p>
           <button onClick={() => handleTrack(booking)} style={{ padding: "5px 10px", background: "blue", color: "white", border: "none" }}>
             Track Live
           </button>
         </div>
-      ))}
+      )
+      })}
 
     <h2>Active Jobs</h2>
       {jobs.length === 0 ? <p>No active jobs</p> : (
@@ -217,7 +226,7 @@ const MechanicDashboard = () => {
       <h2>Pending Bookings</h2>
       {pendingBookings.map((booking) => (
         <div key={booking._id} style={{ border: "1px solid #ddd", padding: "10px", margin: "10px 0" }}>
-          <p><strong>Biker Location:</strong> {booking.bikerLocation.join(", ")}</p>
+          <p><strong>Biker Location:</strong> {booking.bikerLocation.coordinates}</p>
           <p><strong>Issue:</strong> {booking.issue}</p>
           
           {/* Accept Booking Button */}

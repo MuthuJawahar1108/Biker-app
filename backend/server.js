@@ -7,7 +7,12 @@ const bookingRoutes = require("./routes/bookingRoutes");
 const Booking = require("./models/Booking");
 
 
-require("dotenv").config();
+
+require('dotenv').config()
+
+
+console.log("MONGO_URI:", process.env.MONGO_URI); // Debugging line
+
 
 const app = express();
 app.use(cors());
@@ -18,6 +23,7 @@ app.use("/api/bookings", bookingRoutes);
 
 
 // MongoDB Connection
+
 mongoose.connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true })
     .then(() => console.log("MongoDB connected"))
     .catch(err => console.log(err));
