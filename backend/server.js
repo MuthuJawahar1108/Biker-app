@@ -4,6 +4,8 @@ const mongoose = require("mongoose");
 const mapRoutes = require("./routes/mapRoutes");
 const mechanicRoutes = require("./routes/mechanicRoutes");
 const bookingRoutes = require("./routes/bookingRoutes");
+const authRoutes = require("./routes/authRoutes");
+const adminRoutes = require("./routes/adminRoutes");
 const Booking = require("./models/Booking");
 
 
@@ -20,6 +22,8 @@ app.use(express.json());
 app.use("/api/map", mapRoutes);
 app.use("/api/mechanics", mechanicRoutes);
 app.use("/api/bookings", bookingRoutes);
+app.use("/api/auth", authRoutes);
+app.use("/api/admin", adminRoutes);
 
 
 // MongoDB Connection
