@@ -14,22 +14,12 @@ const authMiddleware = (req, res, next) => {
   }
 };
 
-// const authorizeRole = (...roles) => {
 
-//   // console.log("Inside authorizerole")
-//   return (req, res, next) => {
-//     if (!roles.includes(req.user.role)) {
-//       return res.status(403).json({ message: "Forbidden: Insufficient permissions" });
-//     }
-//     next();
-//   };
-// };
 
 const authorizeRole = (role) => {
   return (req, res, next) => {
     try {
 
-      console.log("Inside authorizeRole req ", req.headers); // Debugging line
       // Extract token from Authorization header
       const authHeader = req.headers.authorization;
 
@@ -68,6 +58,24 @@ const authorizeRole = (role) => {
     }
   };
 };
+
+
+// const authorizeRole = (role) => {
+//   return (req, res, next) => {
+//     const token = req.headers.authorization?.split(" ")[1];
+//     if (!token) return res.status(401).json({ error: "No token provided" });
+//     try {
+//       const decoded = jwtDecode(token);
+//       console.log("Decoded token:", decoded);
+//       if (decoded.role !== role) return res.status(403).json({ error: "Unauthorized role" });
+//       req.user = decoded;
+//       next();
+//     } catch (error) {
+//       console.error("Token decoding error:", error);
+//       res.status(401).json({ error: "Invalid token" });
+//     }
+//   };
+// };
 
 
 module.exports = { authMiddleware, authorizeRole };

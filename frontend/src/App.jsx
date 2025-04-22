@@ -108,6 +108,9 @@ import AdminDashboard from "./pages/AdminDashboard";
 import NewBookingPage from "./pages/NewBookingPage";
 import MyBookingsPage from "./pages/MyBookingsPage";
 import MechanicRegisterPage from "./pages/MechanicRegisterPage";
+import BikerTrackingPage from "./pages/BikerTrackingPage";
+import AcceptBookingPage from "./pages/AcceptBookingPage";
+import SetLocationPage from "./pages/SetLocationPage";
 // import RateMechanicPage from "./pages/RateMechanicPage";
 
 const App = () => {
@@ -146,8 +149,13 @@ const App = () => {
         <Route path="/map" element={<ProtectedRoute allowedRoles={["biker"]}><MapPage /></ProtectedRoute>} />
         <Route path="/new-booking" element={<ProtectedRoute allowedRoles={["biker"]}><NewBookingPage /></ProtectedRoute>} />
         <Route path="/my-bookings" element={<ProtectedRoute allowedRoles={["biker"]}><MyBookingsPage /></ProtectedRoute>} />
+        <Route path="/tracking/:bookingId" element={<BikerTrackingPage />} />
         {/* <Route path="/rate-mechanic/:bookingId" element={<ProtectedRoute allowedRoles={["biker"]}><RateMechanicPage /></ProtectedRoute>} /> */}
         <Route path="/mechanic-dashboard" element={<ProtectedRoute allowedRoles={["mechanic"]}><MechanicDashboard /></ProtectedRoute>} />
+        <Route path="/accept-booking/:bookingId" element={<AcceptBookingPage />} />
+
+        <Route path="/set-location/:userType" element={<SetLocationPage />} />
+
         <Route path="/admin-dashboard" element={<ProtectedRoute allowedRoles={["admin"]}><AdminDashboard /></ProtectedRoute>} />
         <Route path="/unauthorized" element={<h1>Unauthorized Access</h1>} />
         <Route path="/" element={<Navigate to="/login" />} />

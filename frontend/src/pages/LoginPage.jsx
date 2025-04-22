@@ -65,8 +65,8 @@ const LoginPage = () => {
 
   const handleLogin = async (e) => {
     e.preventDefault();
-    console.log("Login attempt with", { email, password }); // Debug login attempt
     try {
+
       const response = await axios.post("http://localhost:5000/api/auth/login", { email, password });
       console.log("Response:", response.data); // Debug response
       const { token, userId, name, role } = response.data;

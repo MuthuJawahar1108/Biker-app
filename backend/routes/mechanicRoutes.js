@@ -352,4 +352,30 @@ router.put("/jobs/:jobId", authorizeRole("mechanic"), async (req, res) => {
   }
 });
 
+
+//Update the existing mechanic location endpoint
+
+router.put("/:mechanicUserId/location", authorizeRole("mechanic"), async (req, res) => {
+  try {
+    const { location } = req.body;
+    if (!Array.isArray(location.coordinates) || location.coordinates.length !== 2 || !location.coordinates.every(Number.isFinite)) {
+      return res.status(400).json({ error: "Invalid location format" });
+    }
+    console.log("Mechanic ID from params:", req.params.mechanicUserId);
+    // const mechanic = await Mechanic.findById(req.params.mechanicUserId);
+
+    const mechanic = await Mechanic.findOne({ userId: req.params.mechanicUserId });
+
+    console.log("Mechanic found:", mechanic);
+
+    if (!mechanic) return res.status(404).json({ error: "Mechanic not found" });
+    mechanic.location = location;
+    await mechanic.save();
+    res.status(200).json({ message: "Location updated", location });
+  } catch (err) {
+    res.status(500).json({ error: "Error updating location: " + err.message });
+  }
+});
+
+
 module.exports = router;

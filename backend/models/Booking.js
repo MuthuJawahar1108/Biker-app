@@ -14,6 +14,7 @@ const bookingSchema = new mongoose.Schema({
     }
   },
   issue: { type: String, required: true },
+  isBeingAnalyzedBy: { type: mongoose.Schema.Types.ObjectId, ref: "User", default: null }, // Add this line
   mechanicId: { type: mongoose.Schema.Types.ObjectId, ref: "Mechanic", default: null },
   status: { 
     type: String, 
@@ -23,7 +24,7 @@ const bookingSchema = new mongoose.Schema({
   createdAt: { type: Date, default: Date.now },
   acceptedAt: Date,
   completedAt: Date
-});
+}, { strict: false });
 
 bookingSchema.index({ bikerLocation: "2dsphere" });
 
