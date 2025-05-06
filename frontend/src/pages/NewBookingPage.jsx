@@ -47,9 +47,9 @@ const NewBookingPage = () => {
   }, [bikerLocation, isLoading, updateLocation]);
 
 
-  const handleSetLocation = () => {
-    navigate("/set-location/biker");
-  };
+  // const handleSetLocation = () => {
+  //   navigate("/set-location/biker");
+  // };
 
 const handleSubmit = async (e) => {
     e.preventDefault();
@@ -72,7 +72,10 @@ const handleSubmit = async (e) => {
       );
       console.log("Booking response:", response.data);
       setLocalError("Booking created successfully!");
-      setTimeout(() => navigate("/my-bookings"), 1000);
+      // setTimeout(() => navigate("/my-bookings"), 1000);
+      navigate("/my-bookings");
+
+
     } catch (err) {
       console.error("Booking error:", err.response?.data || err);
       setLocalError("Failed to create booking: " + err.response?.data.message || err.message);
@@ -114,9 +117,9 @@ const handleSubmit = async (e) => {
             </button>
           )}
         </div> */}
-        <button type="button" onClick={handleSetLocation} style={{ padding: "10px", background: "#007bff", color: "white", marginBottom: "10px" }}>
+        {/* <button type="button" onClick={handleSetLocation} style={{ padding: "10px", background: "#007bff", color: "white", marginBottom: "10px" }}>
           Set Location
-        </button>
+        </button> */}
         <button
           type="submit"
           disabled={isSubmitting || isLoading || !bikerLocation}

@@ -18,10 +18,12 @@ const AcceptBookingPage = () => {
   const [routeControl, setRouteControl] = useState(null);
   const [error, setError] = useState("");
   const token = localStorage.getItem("token");
+  const userId = localStorage.getItem("userId"); // Use userId from localStorage
+
 
   useEffect(() => {
     let isMounted = true;
-    let timeoutId;
+    // let timeoutId;
 
     const fetchBookingData = async () => {
       try {
@@ -39,25 +41,47 @@ const AcceptBookingPage = () => {
       }
     };
 
-    const getMechanicLocation = () => {
-      if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(
-          (position) => {
-            if (isMounted) {
-              const { latitude, longitude } = position.coords;
-              setMechanicLocation([latitude, longitude]);
-            }
-          },
-          (err) => {
-            if (isMounted) {
-              setMechanicLocation([0, 0]); // Default if geolocation fails
-              setError("Geolocation error: " + err.message);
-            }
-          },
-          { enableHighAccuracy: true, timeout: 15000 }
-        );
-      } else {
-        if (isMounted) setMechanicLocation([0, 0]);
+
+
+    const getMechanicLocation = async () => {
+      try {
+        // First, try to fetch the location from the server
+        const response = await axios.get(`http://localhost:5000/api/mechanics/${userId}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (isMounted && response.data.location && response.data.location.coordinates) {
+          setMechanicLocation([
+            response.data.location.coordinates[0], // latitude
+            response.data.location.coordinates[1], // longitude
+          ]);
+
+        } else {
+          throw new Error("No location found on server");
+        }
+      } catch (err) {
+        // Fall back to geolocation if server fetch fails
+        if (navigator.geolocation) {
+          navigator.geolocation.getCurrentPosition(
+            (position) => {
+              if (isMounted) {
+                const { latitude, longitude } = position.coords;
+                setMechanicLocation([latitude, longitude]);
+              }
+            },
+            (err) => {
+              if (isMounted) {
+                setMechanicLocation([0, 0]);
+                setError("Geolocation error: " + err.message);
+              }
+            },
+            { enableHighAccuracy: true, timeout: 15000 }
+          );
+        } else {
+          if (isMounted) {
+            setMechanicLocation([0, 0]);
+            setError("Geolocation not supported");
+          }
+        }
       }
     };
 
@@ -65,19 +89,23 @@ const AcceptBookingPage = () => {
     getMechanicLocation();
 
     // Set timeout to return to dashboard after 30 seconds
-    timeoutId = setTimeout(() => {
-      if (isMounted) navigate("/mechanic-dashboard");
-    }, 30000);
+    // timeoutId = setTimeout(() => {
+    //   if (isMounted) navigate("/mechanic-dashboard");
+    // }, 30000);
 
     return () => {
       isMounted = false;
-      if (timeoutId) clearTimeout(timeoutId);
+      // if (timeoutId) clearTimeout(timeoutId);
       if (routeControl) routeControl.remove();
     };
   }, [bookingId, token]);
 
   useEffect(() => {
     if (mechanicLocation && bikerLocation && !routeControl) {
+
+      console.log("mechanic location", mechanicLocation)
+      console.log("biker location", bikerLocation)
+
       const map = L.map("map").setView(mechanicLocation, 13);
       L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
         attribution: "&copy; OpenStreetMap contributors",
@@ -110,7 +138,10 @@ const AcceptBookingPage = () => {
   }, [mechanicLocation, bikerLocation, routeControl]);
 
   const handleAccept = async () => {
+
     try {
+      console.log("Accepting booking with ID:", bookingId);
+
       await axios.post(
         `http://localhost:5000/api/bookings/${bookingId}/accept`,
         {},

@@ -103,37 +103,86 @@ const SetLocationPage = () => {
     return null;
   };
 
-  // 📍 Get current location
+  // // 📍 Get current location
+  // useEffect(() => {
+  //   console.log("Fetching current position...");
+  //   if (navigator.geolocation) {
+  //     navigator.geolocation.getCurrentPosition(
+  //       (position) => {
+  //         const { latitude, longitude } = position.coords;
+  //         console.log("Current position:", latitude, longitude);
+  //         setLocation([latitude, longitude]);
+  //         reverseGeocode(latitude, longitude); // Reverse geocode current location
+  //       },
+  //       (err) => {
+  //         setError("Geolocation error: " + err.message);
+  //         setLocation([0, 0]);
+  //       }
+  //     );
+  //   } else {
+  //     setError("Geolocation not supported");
+  //     setLocation([0, 0]);
+  //   }
+  // }, []);
+
+
+  // Get initial location from server (for mechanics) or geolocation (for bikers)
   useEffect(() => {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          const { latitude, longitude } = position.coords;
-          setLocation([latitude, longitude]);
-          reverseGeocode(latitude, longitude); // Reverse geocode current location
-        },
-        (err) => {
-          setError("Geolocation error: " + err.message);
+    const fetchInitialLocation = async () => {
+      if (userType === "mechanic") {
+        try {
+          const response = await axios.get(`http://localhost:5000/api/mechanics/${userId}`, {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          if (response.data.location && response.data.location.coordinates) {
+            const [lat, lng] = response.data.location.coordinates; // Server stores [lng, lat]
+
+
+            setLocation([lat, lng]); // Convert to [lat, lng] for Leaflet
+            reverseGeocode(lat, lng);
+          } else {
+            setError("No location set. Please select a location.");
+            setLocation([0, 0]);
+          }
+        } catch (err) {
+          setError("Failed to fetch location: " + err.message);
           setLocation([0, 0]);
         }
-      );
-    } else {
-      setError("Geolocation not supported");
-      setLocation([0, 0]);
-    }
-  }, []);
+      } else if (userType === "biker") {
+        if (navigator.geolocation) {
+          navigator.geolocation.getCurrentPosition(
+            (position) => {
+              const { latitude, longitude } = position.coords;
+              setLocation([latitude, longitude]);
+              reverseGeocode(latitude, longitude);
+            },
+            (err) => {
+              setError("Geolocation error: " + err.message);
+              setLocation([0, 0]);
+            }
+          );
+        } else {
+          setError("Geolocation not supported");
+          setLocation([0, 0]);
+        }
+      }
+    };
+
+    fetchInitialLocation();
+  }, [userType, token, userId]);
 
   const handleRemovePin = () => {
     setLocation(null);
     setAddress(""); // Clear the address when removing the pin
   };
 
+
   const handleConfirm = async () => {
-    if (!location) {
-      setError("No location selected");
-      return;
-    }
+    console.log("🔥 Confirm Button Clicked");
     try {
+
+      console.log("Location to update:", location);
+
       let endpoint = "";
       if (userType === "biker") {
         endpoint = `http://localhost:5000/api/bookings/location/${userId}`;
@@ -147,7 +196,7 @@ const SetLocationPage = () => {
       console.log("Updating location:", location);
       await axios.put(
         endpoint,
-        { location: { type: "Point", coordinates: location } },
+        { location: { type: "Point", coordinates: [location[0], location[1]] } },
         { headers: { Authorization: `Bearer ${token}` } }
       );
       navigate(userType === "biker" ? "/my-bookings" : "/mechanic-dashboard");
@@ -155,6 +204,40 @@ const SetLocationPage = () => {
       setError("Failed to update location: " + err.message);
     }
   };
+  
+
+  // const handleConfirm = async () => {
+
+  //   console.log("Confirming location:", location);
+  //   if (!location) {
+  //     console.log("No location selected");
+  //     return;
+  //   }
+    // try {
+
+    //   console.log("Location to update:", location);
+
+    //   let endpoint = "";
+    //   if (userType === "biker") {
+    //     endpoint = `http://localhost:5000/api/bookings/location/${userId}`;
+    //   } else if (userType === "mechanic") {
+    //     endpoint = `http://localhost:5000/api/mechanics/${userId}/location`;
+    //   } else {
+    //     setError("Invalid user type");
+    //     return;
+    //   }
+
+    //   console.log("Updating location:", location);
+    //   await axios.put(
+    //     endpoint,
+    //     { location: { type: "Point", coordinates: [location[0], location[1]] } },
+    //     { headers: { Authorization: `Bearer ${token}` } }
+    //   );
+    //   navigate(userType === "biker" ? "/my-bookings" : "/mechanic-dashboard");
+    // } catch (err) {
+    //   setError("Failed to update location: " + err.message);
+    // }
+  // };
 
   return (
     <div style={{ padding: "20px", backgroundColor: "#1C2526", color: "#FFF" }}>

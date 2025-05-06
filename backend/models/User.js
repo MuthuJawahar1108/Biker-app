@@ -10,6 +10,11 @@ const userSchema = new mongoose.Schema({
     default: "biker",
   },
   createdAt: { type: Date, default: Date.now },
+  // location: {
+  //   type: { type: String, default: "Point" },
+  //   coordinates: { type: [Number], default: [0, 0] },
+  // },
+  // role: { type: String, enum: ["biker", "mechanic"], required: true },
 });
 
 module.exports = mongoose.model("User", userSchema);

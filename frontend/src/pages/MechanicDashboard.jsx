@@ -24,6 +24,40 @@ const MechanicDashboard = () => {
   const token = localStorage.getItem("token");
   const userId = localStorage.getItem("userId"); // Use userId from localStorage
 
+
+  // Fetch mechanic location on mount and when returning from SetLocationPage
+  useEffect(() => {
+    let isMounted = true;
+
+    const fetchMechanicLocation = async () => {
+      try {
+        const response = await axios.get(`http://localhost:5000/api/mechanics/${userId}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (isMounted && response.data.location && response.data.location.coordinates) {
+          setMechanicLocation([
+            response.data.location.coordinates[0], // latitude
+            response.data.location.coordinates[1], // longitude
+          ]);
+        } else {
+          setError("No location set. Please set your location.");
+          setMechanicLocation([0, 0]);
+        }
+      } catch (err) {
+        if (isMounted) {
+          setError("Failed to fetch location: " + err.message);
+          setMechanicLocation([0, 0]);
+        }
+      }
+    };
+
+    fetchMechanicLocation();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [token, userId, location]); // Depend on `location` to re-fetch when returning from SetLocationPage
+
   useEffect(() => {
     let isMounted = true; // Flag to prevent state updates after unmount
   
@@ -50,10 +84,10 @@ const MechanicDashboard = () => {
     };
 
 
-
-
     // Fetch initial data
     const fetchData = async () => {
+
+      if (!mechanicLocation) return; // Wait for mechanicLocation to be set
       setLoading(true);
       try {
         const [bookingsResponse, jobsResponse, availabilityResponse] = await Promise.all([
@@ -71,8 +105,8 @@ const MechanicDashboard = () => {
               const mechanicLatLng = L.latLng(mechanicLocation[0], mechanicLocation[1]);
 
 
-              console.log("Mechanic Location:", mechanicLocation);
-              console.log("Biker LatLng:", bikerLatLng);
+              // console.log("Mechanic Location:", mechanicLocation);
+              // console.log("Biker LatLng:", bikerLatLng);
 
               const distance = mechanicLatLng.distanceTo(bikerLatLng) / 1000; // Convert meters to kilometers
               const travelTime = (distance / 15) * 60; // Assume 15 km/h, convert to minutes
@@ -102,6 +136,8 @@ const MechanicDashboard = () => {
 
 
     
+    
+    
   
     fetchData();
     joinRoom();
@@ -110,7 +146,8 @@ const MechanicDashboard = () => {
   socket.on("newBooking", (data) => {
     if (isMounted) {
       console.log("Received new booking:", data);
-      const bikerLatLng = L.latLng(data.bikerLocation.coordinates[1], data.bikerLocation.coordinates[0]);
+      console.log("Mechanic Location:", mechanicLocation);
+      const bikerLatLng = L.latLng(data.bikerLocation.coordinates[0], data.bikerLocation.coordinates[1]);
       const distance = mechanicLocation
         ? (L.latLng(mechanicLocation[0], mechanicLocation[1]).distanceTo(bikerLatLng) / 1000).toFixed(2)
         : "N/A";
@@ -148,36 +185,36 @@ const MechanicDashboard = () => {
     };
   }, [token, mechanicLocation]);
 
-  useEffect(() => {
+  // useEffect(() => {
     
-    // Track mechanic location
-    if (navigator.geolocation) {
-      const watchId = navigator.geolocation.watchPosition(
-        (position) => {
-          const { latitude, longitude } = position.coords;
-            setMechanicLocation([latitude, longitude]);
-            socket.emit("mechanicLocation", { latitude, longitude, mechanicId: userId });
-        },
-        (err) => console.error("Geolocation error:", err),
-        { enableHighAccuracy: true, maximumAge: 0, timeout: 5000 }
-      );
+  //   // Track mechanic location
+  //   if (navigator.geolocation) {
+  //     const watchId = navigator.geolocation.watchPosition(
+  //       (position) => {
+  //         const { latitude, longitude } = position.coords;
+  //           setMechanicLocation([latitude, longitude]);
+  //           socket.emit("mechanicLocation", { latitude, longitude, mechanicId: userId });
+  //       },
+  //       (err) => console.error("Geolocation error:", err),
+  //       { enableHighAccuracy: true, maximumAge: 0, timeout: 5000 }
+  //     );
       
-      socket.on("requestLocation", () => {
-        console.log("Fetching data...");
-        navigator.geolocation.getCurrentPosition((position) => {
-          const { latitude, longitude } = position.coords;
-          socket.emit("mechanicLocation", { latitude, longitude, mechanicId: userId });
-        });
-      });
+  //     socket.on("requestLocation", () => {
+  //       console.log("Fetching data...");
+  //       navigator.geolocation.getCurrentPosition((position) => {
+  //         const { latitude, longitude } = position.coords;
+  //         socket.emit("mechanicLocation", { latitude, longitude, mechanicId: userId });
+  //       });
+  //     });
 
-      return () => {
-        // isMounted = false;
-        navigator.geolocation.clearWatch(watchId);
-        socket.off("requestLocation");
-      };
-    }
+  //     return () => {
+  //       // isMounted = false;
+  //       navigator.geolocation.clearWatch(watchId);
+  //       socket.off("requestLocation");
+  //     };
+  //   }
 
-  }, [userId]);
+  // }, [userId]);
 
 
   const handleSetLocation = () => {
@@ -308,3 +345,7 @@ const MechanicDashboard = () => {
 };
 
 export default MechanicDashboard;
+
+
+
+

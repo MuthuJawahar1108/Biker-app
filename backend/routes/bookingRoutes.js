@@ -212,17 +212,78 @@ router.get("/:bookingId", authorizeRole("mechanic"), async (req, res) => {
       res.status(500).json({ message: "Error selecting mechanic", error: error.message });
     }
   });
+
+  // router.post("/:bookingId/accept", authorizeRole("mechanic"), async (req, res) => {
+  //   try {
+  //     const { bookingId } = req.params;
+
+
+  //     if (!mongoose.Types.ObjectId.isValid(bookingId)) {
+  //       return res.status(400).json({ error: "Invalid booking ID" });
+  //     }
+  //     const booking = await Booking.findById(bookingId);
+
+
+  //     if (!booking) return res.status(404).json({ message: "Booking not found" });
+  //     if (booking.status !== "Pending") {
+  //       return res.status(400).json({ message: "Booking is not pending" });
+  //     }
+  //     if (booking.mechanicId) {
+  //       return res.status(400).json({ message: "Booking already assigned" });
+  //     }
+  //     const mechanicId = req.user.id;
+
+
+
+  //     const mechanic = await Mechanic.findOne({ userId: mechanicId });
+  //     if (!mechanic) {
+  //       return res.status(404).json({ error: "Mechanic not found for this user" });
+  //     }
+
+      
+      
+  //     // Update Booking
+  //     booking.mechanicId = mechanic._id;
+  //     booking.status = "Accepted";
+  //     booking.acceptedAt = new Date();
+  //     await booking.save();
+
+  //     //Notify biker
+  //     io.to("biker").emit("bookingAccepted", { bookingId, mechanicId: mechanic._id });
+      
+  //     // Optionally create a Job
+  //     const job = new Job({
+  //       bikerId: booking.bikerId,
+  //       bikerName: booking.bikerName,
+  //       mechanicId: mechanic._id,
+  //       location: booking.bikerLocation,
+  //       issue: booking.issue,
+  //       status: "Completed",
+  //     });
+  //     console.log(" Job:", job);
+  //     await job.save();
+
+  //     console.log("Job inderted");
+
+
+  //     res.json({ message: "Booking accepted", booking, job });
+  //   } catch (error) {
+  //     console.error("Error accepting booking:", error);
+  //     res.status(500).json({ message: "Server error", details: error.message });
+  //   }
+  // });
+
   router.post("/:bookingId/accept", authorizeRole("mechanic"), async (req, res) => {
+
+    console.log("Accepting booking with ID:", req.params.bookingId);
     try {
       const { bookingId } = req.params;
-
-
+  
       if (!mongoose.Types.ObjectId.isValid(bookingId)) {
         return res.status(400).json({ error: "Invalid booking ID" });
       }
+  
       const booking = await Booking.findById(bookingId);
-
-
       if (!booking) return res.status(404).json({ message: "Booking not found" });
       if (booking.status !== "Pending") {
         return res.status(400).json({ message: "Booking is not pending" });
@@ -230,26 +291,24 @@ router.get("/:bookingId", authorizeRole("mechanic"), async (req, res) => {
       if (booking.mechanicId) {
         return res.status(400).json({ message: "Booking already assigned" });
       }
-      const mechanicId = req.user.id;
-
-
-
-      const mechanic = await Mechanic.findOne({ userId: mechanicId });
+  
+      const mechanicId = req.user.id; // Extracted from JWT token
+      console.log("Mechanic ID from token:", mechanicId);
+      const mechanic = await Mechanic.findOne({ userId: mechanicId}); // Assuming _id matches req.user.id
+      console.log("Mechanic found:", mechanic);
       if (!mechanic) {
-        return res.status(404).json({ error: "Mechanic not found for this user" });
+        return res.status(404).json({ error: "Mechanic not found" });
       }
-
-      
-      
+  
       // Update Booking
       booking.mechanicId = mechanic._id;
       booking.status = "Accepted";
       booking.acceptedAt = new Date();
       await booking.save();
-
-      //Notify biker
+  
+      // Notify biker
       io.to("biker").emit("bookingAccepted", { bookingId, mechanicId: mechanic._id });
-      
+  
       // Optionally create a Job
       const job = new Job({
         bikerId: booking.bikerId,
@@ -257,14 +316,12 @@ router.get("/:bookingId", authorizeRole("mechanic"), async (req, res) => {
         mechanicId: mechanic._id,
         location: booking.bikerLocation,
         issue: booking.issue,
-        status: "Completed",
+        status: "In Progress", // Changed to "In Progress" since it’s just accepted
       });
-      console.log(" Job:", job);
+      console.log("Job:", job);
       await job.save();
-
-      console.log("Job inderted");
-
-
+      console.log("Job inserted");
+  
       res.json({ message: "Booking accepted", booking, job });
     } catch (error) {
       console.error("Error accepting booking:", error);
